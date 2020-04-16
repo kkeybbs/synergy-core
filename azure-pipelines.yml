@@ -34,9 +34,7 @@ jobs:
       script: |
         cd build
         make
-        mkdir -p ../artifact
-        mv bin bundle/Synergy.app/Contents/MacOS
-        mv bundle/Synergy.app ../artifact/
+        mv bin ../artifact
     displayName: 'Compiling'
 
   - task: PublishPipelineArtifact@1
