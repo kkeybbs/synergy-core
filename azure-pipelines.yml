@@ -2,104 +2,6 @@ trigger:
 - master
 
 jobs: 
-- job: LinuxRHEL
-  pool: 
-    vmImage: 'ubuntu-16.04'
-  strategy:
-    matrix:
-      centos7:
-        image: symless/centos-sudo:7
-
-  container: $[ variables['image'] ]
-
-  steps:
-  - script: |
-      sudo yum -y update
-      sudo yum -y install epel-release boost-static git libXtst-devel qt5-qtbase-devel qt5-qtdeclarative-devel libcurl-devel openssl-devel avahi-compat-libdns_sd-devel autoconf automake gcc gcc-c++ make rpm-build redhat-rpm-config rpm-sign qt5-qttools-devel
-      sudo yum -y install cmake3 #for some reason this needs to be seperate otherwise it wont install
-    displayName: 'Install Pakages'
-    
-  - script: |
-      mkdir build
-      cd build
-      cmake3 ..
-      make
-    displayName: 'Build'
-
-- job: LinuxDeb1
-  pool: 
-    vmImage: 'ubuntu-16.04'
-  strategy:
-    matrix:
-      ubuntu18:
-        image: symless/ubuntu-sudo:18.04
-      ubuntu19:
-        image: symless/ubuntu-sudo:19.04
-
-  container: $[ variables['image'] ]
-
-  steps:
-  - script: |
-      sudo ln -snf /usr/share/zoneinfo/Europe/London /etc/localtime
-      sudo bash -c "echo 'Europe/London' > /etc/timezone"
-    displayName: 'Sort out timezones for updates'
-
-  - script: |
-      sudo DEBIAN_FRONTEND=noninteractive
-      sudo apt-get -y update
-      sudo apt-get -y upgrade
-      sudo apt-get -y install git cmake qtbase5-dev build-essential libx11-dev libxtst-dev libgl1-mesa-dev libssl-dev libavahi-compat-libdnssd-dev debhelper devscripts
-      sudo apt-get -y install qttools5-dev qttools5-dev-tools --no-install-recommends #These will try to install gnome if we allow dependancies
-    displayName: 'Install Pakages'
-
-  - script: |
-      mkdir build
-      cd build
-      cmake ..
-      make
-    displayName: 'Build'
-
-- job: LinuxDeb2
-  pool:
-    vmImage: 'ubuntu-16.04'
-  strategy:
-    matrix:
-      ubuntu16:
-        image: symless/ubuntu-sudo:16.04
-      debian9:
-        image: symless/debian-sudo:stretch
-
-  container: $[ variables['image'] ]
-
-  steps:
-    - script: |
-        sudo ln -snf /usr/share/zoneinfo/Europe/London /etc/localtime
-        sudo bash -c "echo 'Europe/London' > /etc/timezone"
-      displayName: 'Sort out timezones for updates'
-
-    - script: |
-        sudo DEBIAN_FRONTEND=noninteractive
-        sudo apt-get -y update
-        sudo apt-get -y upgrade
-        sudo apt-get -y install git qtbase5-dev build-essential libx11-dev libxtst-dev libgl1-mesa-dev libssl-dev libavahi-compat-libdnssd-dev debhelper devscripts
-        sudo apt-get -y install qttools5-dev qttools5-dev-tools --no-install-recommends #These will try to install gnome if we allow dependancies
-      displayName: 'Install Pakages'
-
-    - script: |
-        sudo DEBIAN_FRONTEND=noninteractive
-        sudo apt-get -y install wget
-        wget https://github.com/Kitware/CMake/releases/download/v3.14.7/cmake-3.14.7-Linux-x86_64.sh
-        sudo chmod +x ./cmake-3.14.7-Linux-x86_64.sh
-        sudo ./cmake-3.14.7-Linux-x86_64.sh --skip-license --prefix=/
-      displayName: 'Installing CMake 3.14'
-
-    - script: |
-        mkdir build
-        cd build
-        cmake ..
-        make
-      displayName: 'Build'
-
 - job: MacOS
   strategy:
     matrix:
@@ -133,6 +35,12 @@ jobs:
         cd build
         make
     displayName: 'Compiling'
+
+  - task: PublishPipelineArtifact@1
+    inputs:
+      targetPath: build
+      artifactName: synergy-core-MacOS
+    displayName: 'PublishArtifact'
 
 - job: Windows
   strategy:
@@ -245,3 +153,12 @@ jobs:
       msbuildArguments: '/m'
       maximumCpuCount: true
     displayName: 'Compiling x86'
+  - task: CmdLine@2
+    inputs:
+      script: 'copy ext\openssl\windows\x64\bin\* build\'
+  
+  - task: PublishPipelineArtifact@1
+    inputs:
+      targetPath: build
+      artifactName: synergy-core-Windows
+    displayName: 'PublishArtifact'
