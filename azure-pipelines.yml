@@ -34,13 +34,17 @@ jobs:
       script: |
         cd build
         make
+        mkdir -p artifact
+        mv bin bundle artifact/
     displayName: 'Compiling'
 
   - task: PublishPipelineArtifact@1
     inputs:
-      targetPath: build
+      targetPath: build/artifact
       artifactName: synergy-core-MacOS
     displayName: 'PublishArtifact'
+
+
 
 - job: Windows
   strategy:
@@ -129,36 +133,13 @@ jobs:
       maximumCpuCount: true
     displayName: 'Compiling x64'
 
-  - task: PythonScript@0
-    inputs:
-      scriptSource: 'filePath'
-      scriptPath: '.\deps\qli-installer-$(QLI_VERSION)\qli-installer.py'
-      arguments: '$(QT_VERSION) windows desktop win32_msvc2017'
-    displayName: 'Installing QT $(QT_VERSION) x32'
-
-  - script: |
-      call "$(ENV_BAT)" -arch=x86
-      set BONJOUR_SDK_HOME=%cd%\$(BONJOUR_SDK_DIR)
-      mkdir build32
-      cd build32
-      cmake -G "Visual Studio 16 2019" -A Win32 -V -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH=$(QT_PATH_32) ..
-    displayName: 'Cmake x86'
-  - task: MSBuild@1
-    inputs:
-      solution: 'build32/synergy-core.sln'
-      msbuildVersion: '16.0'
-      msbuildArchitecture: 'x86'
-      platform: 'Win32'
-      configuration: 'Release'
-      msbuildArguments: '/m'
-      maximumCpuCount: true
-    displayName: 'Compiling x86'
   - task: CmdLine@2
     inputs:
-      script: 'copy ext\openssl\windows\x64\bin\* build\'
-  
+      script:
+        copy ext\openssl\windows\x64\bin\* build64\
+    displayName: 'Copy Depends'
   - task: PublishPipelineArtifact@1
     inputs:
-      targetPath: build
+      targetPath: build64
       artifactName: synergy-core-Windows
     displayName: 'PublishArtifact'
