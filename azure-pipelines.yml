@@ -136,10 +136,13 @@ jobs:
   - task: CmdLine@2
     inputs:
       script:
-        copy ext\openssl\windows\x64\bin\* build64\
+        cd build64
+        md artifact
+        copy ..\ext\openssl\windows\x64\bin\* artifact\
+        copy bin\Release\* artifact\
     displayName: 'Copy Depends'
   - task: PublishPipelineArtifact@1
     inputs:
-      targetPath: build64
+      targetPath: build64/artifact
       artifactName: synergy-core-Windows
     displayName: 'PublishArtifact'
