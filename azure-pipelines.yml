@@ -34,13 +34,13 @@ jobs:
       script: |
         cd build
         make
-        mkdir -p artifact
-        mv bin bundle artifact/
+        mkdir -p ../artifact
+        mv bin bundle ../artifact/
     displayName: 'Compiling'
 
   - task: PublishPipelineArtifact@1
     inputs:
-      targetPath: build/artifact
+      targetPath: artifact
       artifactName: synergy-core-MacOS
     displayName: 'PublishArtifact'
 
@@ -136,13 +136,15 @@ jobs:
   - task: CmdLine@2
     inputs:
       script:
-        cd build64
-        md artifact
-        copy ..\ext\openssl\windows\x64\bin\* artifact\
-        copy bin\Release\* artifact\
+        mkdir artifact
+        echo copy depends...
+        copy ext\openssl\windows\x64\bin\* artifact\
+        echo copy release...
+        copy build64\bin\Release\* artifact\
     displayName: 'Copy Depends'
+
   - task: PublishPipelineArtifact@1
     inputs:
-      targetPath: build64/artifact
+      targetPath: artifact
       artifactName: synergy-core-Windows
     displayName: 'PublishArtifact'
