@@ -35,7 +35,8 @@ jobs:
         cd build
         make
         mkdir -p ../artifact
-        mv bin bundle ../artifact/
+        mv bin bundle/Synergy.app/Contents/MacOS
+        mv bundle/Synergy.app ../artifact/
     displayName: 'Compiling'
 
   - task: PublishPipelineArtifact@1
@@ -133,14 +134,13 @@ jobs:
       maximumCpuCount: true
     displayName: 'Compiling x64'
 
-  - task: CmdLine@2
-    inputs:
-      script:
-        mkdir artifact
-        echo copy depends...
-        copy ext\openssl\windows\x64\bin\* artifact\
-        echo copy release...
-        copy build64\bin\Release\* artifact\
+
+  - script: |
+      mkdir artifact
+      echo copy depends...
+      copy ext\openssl\windows\x64\bin\* artifact\
+      echo copy release...
+      copy build64\bin\Release\* artifact\
     displayName: 'Copy Depends'
 
   - task: PublishPipelineArtifact@1
